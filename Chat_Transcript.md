@@ -1,15 +1,5 @@
 # HW8 — DeFi EDA: Chat Transcript
 
-Переписка с LLM-ассистентом в ходе выполнения HW8 (DeFi EDA на Aave).
-Транскрипт прилагается к ДЗ согласно требованию задания
-("LLMs can be used as an assistance tool for analysis and development but
-the full chat transcript must be provided for transparency and reproducibility").
-
-Формат: каждая реплика User → Assistant. Код в ответах ассистента можно
-скопировать в Jupyter и воспроизвести результат.
-
----
-
 ## 1. Выбор протокола
 
 **User:** Нужно сделать DeFi EDA на топ-50 протокол. Семинар был на Uniswap.
