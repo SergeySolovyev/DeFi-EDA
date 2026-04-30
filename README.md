@@ -25,6 +25,9 @@ EDA одного из топ-50 протоколов DeFi с использов�
 | `HW8.pdf` | Текст задания |
 | `Vega Blockchain and DeFi Data.pdf` | Конспект семинара |
 | `Uniswap_Seminar.ipynb` | Семинарский ноутбук (образец для структуры) |
+| `Chat_Transcript.pdf` | Транскрипт переписки с LLM (требование задания) |
+| `Chat_Transcript.md` | Исходник транскрипта в markdown |
+| `_md_to_pdf.py` | Генератор PDF из markdown |
 
 ## Запуск
 
@@ -43,6 +46,12 @@ jupyter notebook Aave_HW.ipynb
 python _build_aave_nb.py
 jupyter nbconvert --to notebook --execute --inplace Aave_HW.ipynb
 ```
+
+## Публичный Dune-дашборд (extra task)
+
+**https://dune.com/sssolovjov/hw8-aave-eda** — 4 графика по Aave V3 Ethereum:
+daily borrow events (90d), top borrowed reserves (30d), daily liquidations (90d),
+daily unique borrowers (60d).
 
 ## Результаты (на 2026-04-30)
 

@@ -666,74 +666,63 @@ print(f"Mean spread: {merged['spread_bps'].mean():+.2f} bps,  std: {merged['spre
 # ---------- 9. Dune dashboard ----------
 md("""## 9. Public Dune dashboard (extra task)
 
-Steps to publish:
-1. Go to https://dune.com → New → Query → paste each SQL block below → Save.
-2. Once each query runs, click **Add to dashboard** → New dashboard "HW8 — Aave EDA".
-3. Make the dashboard **Public** (toggle in dashboard settings).
+> **Live dashboard:** https://dune.com/sssolovjov/hw8-aave-eda
 
-### Query A — Daily TVL by Aave version (Ethereum)
+The 4 queries below were published on dune.com and added to the public dashboard
+"HW8 - Aave EDA". They use the standard Aave V3 Ethereum decoded event tables
+(`Pool_evt_Borrow`, `Pool_evt_LiquidationCall`) — these run on the Free plan
+without create-query API access (paywalled).
+
+### Query A — Daily borrow events (90d)  →  Line chart
+[Query 7406559](https://dune.com/queries/7406559)
 ```sql
 SELECT
-  date_trunc('day', dt) AS day,
-  'aave_v3' AS proto,
-  SUM(tvl_usd) AS tvl_usd
-FROM aave_v3_ethereum.market_daily_snapshots
-WHERE dt > NOW() - INTERVAL '180' DAY
-GROUP BY 1
-UNION ALL
-SELECT
-  date_trunc('day', dt),
-  'aave_v2',
-  SUM(tvl_usd)
-FROM aave_v2_ethereum.market_daily_snapshots
-WHERE dt > NOW() - INTERVAL '180' DAY
+  date_trunc('day', evt_block_time) AS day,
+  COUNT(*) AS borrow_events,
+  SUM(amount / POW(10, 18)) AS approx_amount
+FROM aave_v3_ethereum.Pool_evt_Borrow
+WHERE evt_block_time > NOW() - INTERVAL '90' day
 GROUP BY 1
 ORDER BY 1
 ```
 
-### Query B — Top borrowed assets on Aave V3 (last 30 days)
+### Query B — Top borrowed reserves (30d)  →  Bar chart
+[Query 7406576](https://dune.com/queries/7406576)
 ```sql
 SELECT
-  reserve_symbol,
-  SUM(amount_usd) AS borrow_volume_usd_30d
-FROM aave_v3_ethereum.borrow
-WHERE evt_block_time > NOW() - INTERVAL '30' DAY
+  reserve,
+  COUNT(*) AS n_borrows,
+  SUM(amount / POW(10, 18)) AS approx_volume
+FROM aave_v3_ethereum.Pool_evt_Borrow
+WHERE evt_block_time > NOW() - INTERVAL '30' day
 GROUP BY 1
-ORDER BY 2 DESC
+ORDER BY n_borrows DESC
 LIMIT 15
 ```
 
-### Query C — Liquidations by collateral asset (90d)
+### Query C — Daily liquidations (90d)  →  Bar chart
+[Query 7406582](https://dune.com/queries/7406582)
 ```sql
 SELECT
-  collateral_symbol,
-  COUNT(*) AS n_liquidations,
-  SUM(debt_to_cover_usd) AS total_debt_repaid_usd
-FROM aave_v3_ethereum.liquidationcall
-WHERE evt_block_time > NOW() - INTERVAL '90' DAY
+  date_trunc('day', evt_block_time) AS day,
+  COUNT(*) AS n_liquidations
+FROM aave_v3_ethereum.Pool_evt_LiquidationCall
+WHERE evt_block_time > NOW() - INTERVAL '90' day
 GROUP BY 1
-ORDER BY 3 DESC
+ORDER BY 1
 ```
 
-### Query D — Aave vs Compound vs Morpho weekly borrow volume
+### Query D — Daily unique borrowers (60d)  →  Line chart
+[Query 7406588](https://dune.com/queries/7406588)
 ```sql
-WITH borrows AS (
-  SELECT date_trunc('week', evt_block_time) AS week, 'aave_v3' AS proto, amount_usd FROM aave_v3_ethereum.borrow
-  UNION ALL
-  SELECT date_trunc('week', evt_block_time), 'compound_v3', amount_usd FROM compound_v3_ethereum.withdrawcollateral
-  UNION ALL
-  SELECT date_trunc('week', evt_block_time), 'morpho_blue', amount_usd FROM morpho_blue_ethereum.borrow
-)
-SELECT week, proto, SUM(amount_usd) AS borrow_volume_usd
-FROM borrows
-WHERE week > NOW() - INTERVAL '180' DAY
-GROUP BY 1, 2
-ORDER BY 1, 2
+SELECT
+  date_trunc('day', evt_block_time) AS day,
+  COUNT(DISTINCT \"user\") AS unique_borrowers
+FROM aave_v3_ethereum.Pool_evt_Borrow
+WHERE evt_block_time > NOW() - INTERVAL '60' day
+GROUP BY 1
+ORDER BY 1
 ```
-
-After publishing, paste the public dashboard URL here:
-
-> **HW8 dashboard:** _(your URL)_
 """)
 
 # ---------- 10. Conclusions ----------
